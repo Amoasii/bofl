@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Достижения - Книга Жизни</title>
+  
+  <!-- Подключение стилей и шрифтов -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat+Alternates:wght@700&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #e0eafc, #cfdef3);
+      overflow: hidden;
+      font-family: 'Roboto', sans-serif;
+    }
+    .header {
+  margin: 10px 0;
+  text-align: center;
+  font-size: 1.5em;
+  font-weight: 700;
+  color: #007BFF;
+  background: linear-gradient(135deg, #00aaff, #0056b3);
+  -webkit-background-clip: text;  /* Префикс для поддержки в WebKit браузерах */
+  background-clip: text;          /* Стандартное свойство для всех поддерживаемых браузеров */
+  -webkit-text-fill-color: transparent;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+  font-family: 'Montserrat Alternates', sans-serif;
+}
+
+    .card-container {
+      display: grid;
+      gap: 10px;
+      padding: 10px;
+      width: calc(100vw - 30px);
+      height: calc(100vh - 50px);
+      box-sizing: border-box;
+    }
+    .card {
+      background: #ffffff;
+      border-radius: 4px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      box-sizing: border-box;
+      font-size: 1em;
+      padding: 10px;
+      line-height: 1.1;
+      color: #555555;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .card:hover {
+      transform: scale(1.05);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+    .toggle-button {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: none;
+      color: #cccccc;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+      z-index: 1000;
+    }
+    .hidden-text {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, opacity 0.3s ease;
+    }
+    .visible-text {
+      max-height: 100px;
+      opacity: 1;
+      transition: max-height 1s ease, opacity 1s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <button id="toggleButton" class="toggle-button" onclick="toggleSecondColumn()"><i class="fas fa-eye"></i></button>
+  <div class="header">Достижения - Книга Жизни</div>
+  <div id="cardContainer" class="card-container"></div>
+
+  <script>
+    const sheetId = '1pyWF76VpxVKMOmi8MvhkF82VJoEsDXZQlu38B0mDGdI';  // Идентификатор вашей Google Таблицы
+    const range = 'Дети!J:K';  // Диапазон данных, которые вы хотите получить
+    const apiKey = 'AIzaSyCFVTQsTelnClepY_XFlkW_4-jhjPLwhDY';  // Ваш API Key
+
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}?key=${apiKey}`;
+
+    let showSecondColumn = false;
+    let cachedData = [];
+
+    function refreshData() {
+      fetch(url)
+        .then(response => response.json())
+        .then(data => updateCards(data.values))
+        .catch(error => console.error('Error:', error));
+    }
+
+    function updateCards(data) {
+      cachedData = data.slice(1); // Кэшируем данные для переключения
+      renderCards();
+    }
+
+    function renderCards() {
+      var container = document.getElementById('cardContainer');
+      container.innerHTML = ''; // Очищаем контейнер
+
+      cachedData.sort((a, b) => a[0].localeCompare(b[0]));
+
+      var rows = Math.ceil(Math.sqrt(cachedData.length));
+      var cardSize = 100 / rows;
+
+      container.style.gridTemplateColumns = `repeat(${rows}, calc(${cardSize}% - 10px))`;
+      container.style.gridTemplateRows = `repeat(${rows}, calc(${cardSize}% - 10px))`;
+
+      for (var i = 0; i < cachedData.length; i++) {
+        var card = document.createElement('div');
+        card.className = 'card';
+        card.style.width = `calc(${cardSize}vw - 10px)`;
+        card.style.height = `calc(${cardSize}vh - 10px)`;
+        card.style.fontSize = `${12 / rows}em`;
+        card.innerHTML = `${cachedData[i][0]}<br><span class="${showSecondColumn ? 'visible-text' : 'hidden-text'}">${cachedData[i][1]}</span>`;
+        container.appendChild(card);
+      }
+
+      updateToggleButton();
+    }
+
+    function updateToggleButton() {
+      var button = document.getElementById('toggleButton');
+      button.innerHTML = showSecondColumn ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+    }
+
+    function toggleSecondColumn() {
+      showSecondColumn = !showSecondColumn;
+      var cards = document.querySelectorAll('.card span');
+      cards.forEach(function(span) {
+        if (showSecondColumn) {
+          span.classList.remove('hidden-text');
+          span.classList.add('visible-text');
+        } else {
+          span.classList.remove('visible-text');
+          span.classList.add('hidden-text');
+        }
+      });
+      updateToggleButton(); 
+    }
+
+    window.onload = refreshData;
+    setInterval(refreshData, 10000); // Обновляем данные каждые 10 секунд
+  </script>
+</body>
+</html>
